@@ -1,0 +1,51 @@
+{
+  "name": "@sd/ai-sql",
+  "version": "0.1.0",
+  "description": "Drop-in AI-powered SQL chat UI: React 19 components + hooks + SSE event types. Backend-agnostic (pairs with ai-sql-spring-boot-starter).",
+  "type": "module",
+  "engines": { "node": ">=20.0.0" },
+  "main": "dist/index.esm.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": { "types": "./dist/index.d.ts", "import": "./dist/index.esm.js" },
+    "./ui": { "types": "./dist/ui/index.d.ts", "import": "./dist/ui/index.esm.js" },
+    "./hooks": { "types": "./dist/hooks/index.d.ts", "import": "./dist/hooks/index.esm.js" }
+  },
+  "files": ["dist", "README.md"],
+  "scripts": {
+    "build": "rm -rf dist && tsc && rollup -c",
+    "dev": "rollup -c -w",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "@mui/material": "^7.0.0",
+    "@mui/icons-material": "^7.0.0",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "shared-components": "^1.0.0"
+  },
+  "dependencies": {
+    "react-markdown": "^9.0.1",
+    "remark-gfm": "^4.0.0",
+    "rehype-highlight": "^7.0.0",
+    "recharts": "^2.13.0",
+    "mermaid": "^11.4.0"
+  },
+  "devDependencies": {
+    "shared-components": "file:../../libs/shared-components",
+    "@rollup/plugin-babel": "^6.0.4",
+    "@rollup/plugin-node-resolve": "^15.3.0",
+    "@rollup/plugin-typescript": "^12.1.1",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "rollup": "^4.27.0",
+    "tslib": "^2.8.0",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.0"
+  }
+}

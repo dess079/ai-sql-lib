@@ -1,0 +1,29 @@
+{
+	"folders": [
+		{
+			"path": "../../../../ai-sql"
+		},
+		{
+			"path": "../../../../agentic/sylvain-builder"
+		},
+		{
+			"path": "../.."
+		},
+		{
+			"path": "../../../ai-sql-spring-boot-starter"
+		},
+		{
+			"path": "../../../../agentic/sd-agents"
+		},
+		{
+			"path": "../../../shared-components"
+		},
+		{
+			"path": "../../../../portail-backend"
+		}
+	],
+	"settings": {
+		"java.compile.nullAnalysis.mode": "disabled",
+		"java.configuration.updateBuildConfiguration": "interactive"
+	}
+}
