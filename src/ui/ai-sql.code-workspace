@@ -4,22 +4,19 @@
 			"path": "../../../../ai-sql"
 		},
 		{
-			"path": "../../../../agentic/sylvain-builder"
-		},
-		{
 			"path": "../.."
 		},
 		{
 			"path": "../../../ai-sql-spring-boot-starter"
 		},
 		{
-			"path": "../../../../agentic/sd-agents"
-		},
-		{
 			"path": "../../../shared-components"
 		},
 		{
 			"path": "../../../../portail-backend"
+		},
+		{
+			"path": "../../../../../ai-creators"
 		}
 	],
 	"settings": {

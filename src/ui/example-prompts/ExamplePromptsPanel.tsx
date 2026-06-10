@@ -4,20 +4,20 @@
 import type { JSX } from "react";
 import { useState } from "react";
 import { Box, Typography, Chip, Stack, Divider, Button, Paper } from "@mui/material";
+import { useTheme, type Theme } from "@mui/material/styles";
 import type { ExamplePrompt, OutputType } from "./examplePrompts";
 import { EXAMPLE_GROUPS } from "./examplePrompts";
 import { ChartPreview } from "./ChartPreview";
 
-/** Label and accent colour for each output type. */
-const CHART_CFG: Record<OutputType, { label: string; bg: string }> = {
-  bar:     { label: "Barres",      bg: "#4F8EF7" },
-  line:    { label: "Courbe",      bg: "#10B981" },
-  pie:     { label: "Circulaire",  bg: "#A855F7" },
-  area:    { label: "Aire",        bg: "#06B6D4" },
-  scatter: { label: "Nuage pts",   bg: "#F59E0B" },
-  mermaid: { label: "Diagramme",   bg: "#8B5CF6" },
-  table:   { label: "Tableau",     bg: "#64748b" },
-};
+const chartConfig = (theme: Theme): Record<OutputType, { label: string; bg: string }> => ({
+  bar:     { label: "Barres",      bg: theme.palette.primary.main },
+  line:    { label: "Courbe",      bg: theme.palette.success.main },
+  pie:     { label: "Circulaire",  bg: theme.palette.secondary.main },
+  area:    { label: "Aire",        bg: theme.palette.info.main },
+  scatter: { label: "Nuage pts",   bg: theme.palette.warning.main },
+  mermaid: { label: "Diagramme",   bg: theme.palette.primary.dark },
+  table:   { label: "Tableau",     bg: theme.palette.text.secondary },
+});
 
 /** Returns the sx object for a list row depending on its active state. */
 const rowSx = (active: boolean) => ({
@@ -48,9 +48,10 @@ export interface ExamplePromptsPanelProps {
  * @returns the panel JSX element
  */
 export function ExamplePromptsPanel({ onSelect, onClose }: ExamplePromptsPanelProps): JSX.Element {
+  const theme = useTheme();
   const all = EXAMPLE_GROUPS.flatMap((g) => g.items);
   const [sel, setSel] = useState<ExamplePrompt>(all[0]);
-  const cfg = CHART_CFG[sel.outputType];
+  const cfg = chartConfig(theme)[sel.outputType];
   const grp = EXAMPLE_GROUPS.find((g) => g.items.some((i) => i.label === sel.label))!;
 
   return (
@@ -67,8 +68,8 @@ export function ExamplePromptsPanel({ onSelect, onClose }: ExamplePromptsPanelPr
                   <Typography variant="body2" noWrap sx={{ fontSize: "0.76rem", flex: 1, mr: 0.5 }}>
                     {item.label}
                   </Typography>
-                  <Chip label={CHART_CFG[item.outputType].label} size="small"
-                    sx={{ height: 18, fontSize: "0.62rem", bgcolor: CHART_CFG[item.outputType].bg, color: "#fff", pointerEvents: "none" }} />
+                  <Chip label={chartConfig(theme)[item.outputType].label} size="small"
+                    sx={{ height: 18, fontSize: "0.62rem", bgcolor: chartConfig(theme)[item.outputType].bg, color: theme.palette.getContrastText(chartConfig(theme)[item.outputType].bg), pointerEvents: "none" }} />
                 </Box>
               ))}
             </Stack>
@@ -81,7 +82,7 @@ export function ExamplePromptsPanel({ onSelect, onClose }: ExamplePromptsPanelPr
       <Box sx={{ width: "62%", p: 2.5, display: "flex", flexDirection: "column", gap: 1.5 }}>
         <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", alignItems: "center" }}>
           <Chip label={grp.level} color={grp.color} size="small" />
-          <Chip label={cfg.label} size="small" sx={{ bgcolor: cfg.bg, color: "#fff", fontWeight: 700 }} />
+          <Chip label={cfg.label} size="small" sx={{ bgcolor: cfg.bg, color: theme.palette.getContrastText(cfg.bg), fontWeight: 700 }} />
         </Box>
         <Typography variant="subtitle1" fontWeight={700} lineHeight={1.3}>{sel.label}</Typography>
         <Paper variant="outlined" sx={{ p: 1.5, bgcolor: "action.hover", overflowY: "auto", maxHeight: 96 }}>

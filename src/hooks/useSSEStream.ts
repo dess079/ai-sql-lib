@@ -1,11 +1,10 @@
 /**
- * Subscribes to a Server-Sent Events stream from the AI-SQL backend.
- * Handles auto-reconnect with replay so users can navigate away and return.
- *
- * The hook is unopinionated: it just delivers typed events to a handler.
+ * Subscribes to a Server-Sent Events stream from the AI-SQL backend using
+ * fetch-based SSE (supports custom auth headers unlike native EventSource).
  */
 import { useEffect, useRef } from "react";
 import type { AISQLEvent } from "../types/events";
+import { drainSSE } from "./sseUtils";
 
 /** Options for {@link useSSEStream}. */
 export interface UseSSEStreamOptions {
@@ -19,16 +18,19 @@ export interface UseSSEStreamOptions {
   onClose?: (reason: "complete" | "error" | "unmount") => void;
   /** If true, fetch buffered events from `/replay` first (default true). */
   replay?: boolean;
+  /** Optional Bearer token for authenticated backends. */
+  authToken?: string;
 }
 
 /**
- * Opens an `EventSource` to `${backendUrl}/api/ai-sql/sessions/{sessionId}/stream`,
+ * Opens a fetch-based SSE stream to `${backendUrl}/api/ai-sql/sessions/{sessionId}/stream`,
  * after optionally replaying the buffered event history.
  *
- * @param opts - stream configuration
+ * @param opts - stream configuration including optional Bearer authToken
  */
 export function useSSEStream(opts: UseSSEStreamOptions): void {
-  const { backendUrl, sessionId, onEvent, onClose, replay = true } = opts;
+  const { backendUrl, sessionId, onEvent, onClose, replay = true, authToken } = opts;
+
   const onEventRef = useRef(onEvent);
   const onCloseRef = useRef(onClose);
   onEventRef.current = onEvent;
@@ -36,41 +38,55 @@ export function useSSEStream(opts: UseSSEStreamOptions): void {
 
   useEffect(() => {
     if (!sessionId) return;
-    let cancelled = false;
-    let es: EventSource | null = null;
 
-    const open = () => {
+    let cancelled = false;
+    const ctrl = new AbortController();
+    const authHdr: Record<string, string> = authToken
+      ? { Authorization: `Bearer ${authToken}` }
+      : {};
+
+    const openStream = async () => {
       if (cancelled) return;
-      es = new EventSource(`${backendUrl}/api/ai-sql/sessions/${sessionId}/stream`);
-      const handler = (name: AISQLEvent["event"]) => (e: MessageEvent) => {
-        try {
-          const data = JSON.parse(e.data);
-          onEventRef.current({ event: name, data } as AISQLEvent);
-          if (name === "complete") { es?.close(); onCloseRef.current?.("complete"); }
-        } catch { /* ignore malformed frame */ }
-      };
-      const names: AISQLEvent["event"][] = [
-        "session_start", "schema_built", "prompt_rephrased", "step_start",
-        "sql_generated", "sql_validated", "query_executing", "query_result",
-        "render_start", "content_chunk", "complete", "error", "token_usage",
-      ];
-      names.forEach((n) => es!.addEventListener(n, handler(n)));
-      es.onerror = () => { es?.close(); onCloseRef.current?.("error"); };
+      try {
+        const r = await fetch(
+          `${backendUrl}/api/ai-sql/sessions/${sessionId}/stream`,
+          { headers: { Accept: "text/event-stream", ...authHdr }, signal: ctrl.signal },
+        );
+
+        if (!r.ok || !r.body) {
+          const text = r.body ? await r.text() : "";
+          const errorMessage = text || `Stream error HTTP ${r.status}`;
+          onEventRef.current({ event: "error", data: { error: errorMessage, code: "STREAM_OPEN_FAILED" } });
+          return;
+        }
+
+        await drainSSE(
+          r.body,
+          (e) => onEventRef.current(e),
+          (reason) => onCloseRef.current?.(reason),
+          () => cancelled,
+        );
+      } catch (e) {
+        if (!cancelled) {
+          const msg = e instanceof Error ? e.message : String(e);
+          onEventRef.current({ event: "error", data: { error: `Erreur de connexion SSE : ${msg}`, code: "STREAM_ERROR" } });
+        }
+      }
     };
 
     if (replay) {
-      fetch(`${backendUrl}/api/ai-sql/sessions/${sessionId}/replay`)
+      fetch(`${backendUrl}/api/ai-sql/sessions/${sessionId}/replay`, { headers: authHdr })
         .then((r) => (r.ok ? r.json() : []))
         .then((rows: { name: string; data: unknown }[]) => {
           if (cancelled) return;
           rows.forEach((row) => onEventRef.current({ event: row.name, data: row.data } as AISQLEvent));
-          open();
+          void openStream();
         })
-        .catch(() => open());
+        .catch(() => void openStream());
     } else {
-      open();
+      void openStream();
     }
 
-    return () => { cancelled = true; es?.close(); onCloseRef.current?.("unmount"); };
-  }, [backendUrl, sessionId, replay]);
+    return () => { cancelled = true; ctrl.abort(); onCloseRef.current?.("unmount"); };
+  }, [backendUrl, sessionId, replay, authToken]);
 }

@@ -1,17 +1,10 @@
 /**
  * AI provider + model metadata used by the model selector chip.
- * The backend returns this from `GET /api/ai-sql/models`.
+ * The backend returns this from `GET /api/ai-sql/models` or `/api/ai-sql/dynamic-models`.
  */
 
-/** Curated list of supported provider keys. Mirrors Spring AI provider names. */
-export type ProviderKey =
-  | "openai"
-  | "anthropic"
-  | "azure-openai"
-  | "github-models"
-  | "ollama"
-  | "gemini"
-  | "mistral";
+/** Provider key returned by the backend. This is dynamic and may include any Spring AI provider name. */
+export type ProviderKey = string;
 
 /** A single selectable model. */
 export interface AIModel {

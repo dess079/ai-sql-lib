@@ -8,7 +8,7 @@
  * ```
  */
 import type { JSX } from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Box, Drawer, Snackbar } from "@mui/material";
 import type { TokenUsage } from "../types/models";
 import { useModels } from "../hooks/useModels";
@@ -30,6 +30,8 @@ export interface AISQLChatProps {
   userId?: string;
   /** Initial drawer width in px. */
   sidebarWidth?: number;
+  /** Optional Bearer token passed as `Authorization: Bearer <token>` to all requests. */
+  authToken?: string;
 }
 
 /**
@@ -39,8 +41,8 @@ export interface AISQLChatProps {
  * @param props.sidebarWidth - drawer width in px (default 280)
  * @returns the chat UI
  */
-export function AISQLChat({ backendUrl, userId = "default", sidebarWidth = 280 }: AISQLChatProps): JSX.Element {
-  const { providers } = useModels(backendUrl);
+export function AISQLChat({ backendUrl, userId = "default", sidebarWidth = 280, authToken }: AISQLChatProps): JSX.Element {
+  const { providers } = useModels(backendUrl, authToken);
   const [model, setModel] = useState<string | null>(null);
   useEffect(() => {
     if (!model && providers.length > 0) {
@@ -54,8 +56,8 @@ export function AISQLChat({ backendUrl, userId = "default", sidebarWidth = 280 }
   const [resumed, setResumed] = useState(false);
   const [streaming, setStreaming] = useState(false);
   const { state, apply, reset, clear } = useAISQL(sessionId);
-  const { submit, submitting } = useSubmitQuery(backendUrl);
-  const { conversations, loading, reload, remove, rename, loadMessages } = useConversation(backendUrl, userId);
+  const { submit, submitting } = useSubmitQuery(backendUrl, authToken);
+  const { conversations, loading, reload, remove, rename, loadMessages } = useConversation(backendUrl, userId, authToken);
   const { historyMessages, loadHistory, clearHistory, detailOpen, detailTitle, detailMsgs, detailLoading, openDetail, closeDetail } = useSessionHistory(loadMessages);
 
   const allModels = providers.filter((p) => p.enabled).flatMap((p) => p.models);
@@ -64,7 +66,18 @@ export function AISQLChat({ backendUrl, userId = "default", sidebarWidth = 280 }
     ? { model, used: state.tokenUsage?.model === model ? state.tokenUsage.used : historyTokens, max: allModels.find((m) => m.id === model)?.contextWindow ?? 0 }
     : null;
 
-  useSSEStream({ backendUrl, sessionId, onEvent: apply, onClose: (r) => { setStreaming(false); if (r === "complete") reload(); } });
+  const streamingRef = useRef(false);
+  streamingRef.current = streaming;
+
+  useSSEStream({
+    backendUrl, sessionId, authToken, onEvent: apply,
+    onClose: (r) => {
+      const was = streamingRef.current;
+      setStreaming(false);
+      if (r === "complete") reload();
+      else if (r === "error" && was) apply({ event: "error", data: { error: "La connexion au serveur a été perdue. Veuillez réessayer.", code: "STREAM_ERROR" } });
+    },
+  });
   useEffect(() => { if (sessionId && state.steps.length === 0) setResumed(true); }, [sessionId, state.steps.length]);
 
   const onSubmit = async (prompt: string): Promise<void> => {
@@ -72,18 +85,18 @@ export function AISQLChat({ backendUrl, userId = "default", sidebarWidth = 280 }
     try {
       const res = await submit(prompt, { model: model ?? undefined, conversationId: conversationId ?? undefined, userId });
       setSessionId(res.sessionId); setConversationId(res.conversationId);
-    } catch { setStreaming(false); }
+    } catch (e) {
+      setStreaming(false);
+      apply({ event: "error", data: { error: e instanceof Error ? e.message : "La requête a échoué. Veuillez réessayer.", code: "SUBMIT_ERROR" } });
+    }
   };
 
   const activeTitle = conversations.find((c) => c.id === conversationId)?.title ?? "";
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", height: "100vh" }}>
-      <AISQLToolbar providers={providers} model={model} onModelChange={setModel} tokenUsage={effectiveUsage}
-        submitting={submitting} streaming={streaming} sessionTitle={activeTitle} onSubmit={onSubmit} />
-
+    <Box sx={{ display: "flex", flexDirection: "column", height: "100%", bgcolor: "background.default", color: "text.primary" }}>
       <Box sx={{ flex: 1, display: "flex", overflow: "hidden" }}>
-        <Drawer variant="permanent" sx={{ width: sidebarWidth, "& .MuiDrawer-paper": { width: sidebarWidth, position: "relative" } }}>
+        <Drawer variant="permanent" sx={{ width: sidebarWidth, "& .MuiDrawer-paper": { width: sidebarWidth, position: "relative", bgcolor: "background.paper", color: "text.primary" } }}>
           <ConversationList conversations={conversations} loading={loading} activeId={conversationId}
             onSelect={(id) => { clear(); setConversationId(id); setSessionId(null); void loadHistory(id); }}
             onDelete={remove} onRename={rename}
@@ -92,6 +105,8 @@ export function AISQLChat({ backendUrl, userId = "default", sidebarWidth = 280 }
         </Drawer>
 
         <Box sx={{ flex: 1, display: "flex", flexDirection: "column", overflow: "clip" }}>
+          <AISQLToolbar providers={providers} model={model} onModelChange={setModel} tokenUsage={effectiveUsage}
+            submitting={submitting} streaming={streaming} sessionTitle={activeTitle} onSubmit={onSubmit} />
           <AISQLChatBody state={state} backendUrl={backendUrl} historyMessages={historyMessages} />
           <PromptInput onSubmit={onSubmit} disabled={submitting || streaming} tokenUsage={effectiveUsage} busy={submitting || streaming} />
         </Box>

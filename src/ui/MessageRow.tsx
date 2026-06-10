@@ -2,10 +2,36 @@
  * Renders a single persisted message: role chip, model, content, optional chart/mermaid, optional SQL.
  */
 import type { JSX } from "react";
-import { Box, Typography, Chip } from "@mui/material";
+import { Box, Typography, Chip, IconButton, Tooltip } from "@mui/material";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import CheckIcon from "@mui/icons-material/Check";
+import { useState } from "react";
 import type { Message } from "../types/conversation";
+import type { QueryResult } from "../types/schema";
 import { MarkdownView } from "./MarkdownView";
 import { ResultsDisplay } from "./ResultsDisplay";
+
+function serializeResult(result: QueryResult): string {
+  if (result.mermaid) {
+    return result.mermaid.trim();
+  }
+
+  return JSON.stringify({ format: result.format, columns: result.columns, rows: result.rows }, null, 2);
+}
+
+function serializeMessage(message: Message): string {
+  const chunks = [message.content.trim()];
+
+  if (message.queryResult) {
+    chunks.push(serializeResult(message.queryResult));
+  }
+
+  if (message.sql) {
+    chunks.push(message.sql.trim());
+  }
+
+  return chunks.filter(Boolean).join("\n\n");
+}
 
 /** Props for {@link MessageRow}. */
 export interface MessageRowProps {
@@ -24,11 +50,20 @@ export interface MessageRowProps {
  * @returns the row JSX
  */
 export function MessageRow({ message: m, queryNumber }: MessageRowProps): JSX.Element {
+  const [copied, setCopied] = useState(false);
+  
+  const onCopy = (text: string): void => {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2000);
+    });
+  };
+
   return (
     <Box>
       <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
         {queryNumber != null && (
-          <Chip size="small" label={`Query #${queryNumber}`} color="secondary" variant="outlined" />
+          <Chip size="small" label={`Query #${queryNumber}`} color="secondary" variant="filled" />
         )}
 
         <Chip
@@ -40,12 +75,36 @@ export function MessageRow({ message: m, queryNumber }: MessageRowProps): JSX.El
         {m.model && (
           <Typography variant="caption" color="text.secondary">{m.model}</Typography>
         )}
+        {m.role !== "user" && (
+          <Tooltip title={copied ? "Copied!" : "Copy result"}>
+            <IconButton
+              onClick={() => onCopy(serializeMessage(m))}
+              size="small"
+              sx={{ ml: "auto" }}
+            >
+              {copied ? <CheckIcon fontSize="small" color="success" /> : <ContentCopyIcon fontSize="small" />}
+            </IconButton>
+          </Tooltip>
+        )}
       </Box>
 
       {m.role === "user" ? (
-        <Typography variant="body2" sx={{ whiteSpace: "pre-wrap" }}>{m.content}</Typography>
+        <Box position="relative">
+          <Tooltip title={copied ? "Copied!" : "Copy content"}>
+            <IconButton 
+              onClick={() => onCopy(m.content)} 
+              size="small"
+              sx={{ position: "absolute", top: 0, right: 0 }}
+            >
+              {copied ? <CheckIcon fontSize="small" color="success" /> : <ContentCopyIcon fontSize="small" />}
+            </IconButton>
+          </Tooltip>
+          <Typography variant="body2" sx={{ whiteSpace: "pre-wrap" }}>{m.content}</Typography>
+        </Box>
       ) : (
-        <MarkdownView content={m.content} />
+        <Box position="relative">
+          <MarkdownView content={m.content} />
+        </Box>
       )}
 
       {m.queryResult && m.role !== "user" && (

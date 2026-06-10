@@ -38,7 +38,7 @@ export interface ConversationListProps {
 export function ConversationList({ conversations, loading, activeId, onSelect, onDelete, onRename, onNewSession, onDetail }: ConversationListProps): JSX.Element {
   return (
     <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
-      <Box sx={{ p: 1.5, borderBottom: 1, borderColor: "divider" }}>
+      <Box sx={{ p: 1.5, minHeight: 64, display: "flex", alignItems: "center", borderBottom: 1, borderColor: "divider" }}>
         <Button fullWidth variant="contained" size="small" startIcon={<AddIcon />} onClick={onNewSession}
           sx={{ textTransform: "none", fontWeight: 600 }}>
           New Session

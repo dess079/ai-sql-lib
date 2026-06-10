@@ -27,8 +27,9 @@ function parseChart(json: unknown): import("../types/schema").ChartHint | undefi
 export function ResultsDisplay({ result }: ResultsDisplayProps): JSX.Element {
   const hint = parseChart(result.chart);
   const showTable = result.format !== "mermaid" && result.format !== "markdown";
+
   return (
-    <Box>
+    <Box sx={{ position: "relative", my: 1 }}>
       {result.mermaid && <MermaidView code={result.mermaid} />}
       {hint && result.rows.length > 0 && <ChartView rows={result.rows} hint={hint} />}
       {showTable && <ResultsTable result={result} />}

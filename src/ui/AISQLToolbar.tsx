@@ -4,7 +4,6 @@
  */
 import type { JSX } from "react";
 import { AppBar, Toolbar, Typography } from "@mui/material";
-import { LanguageToggle, ThemeSelector } from "shared-components";
 import { ModelSelector } from "./ModelSelector";
 import { TokenUsageBar } from "./TokenUsageBar";
 import { ExamplePromptsButton } from "./example-prompts";
@@ -40,13 +39,10 @@ export function AISQLToolbar({
 }: AISQLToolbarProps): JSX.Element {
   const busy = submitting || streaming;
   return (
-    <AppBar position="sticky" color="default" elevation={1} sx={{ top: 0, zIndex: 10 }}>
-      <Toolbar sx={{ gap: 2, minHeight: 72, px: 3 }}>
+    <AppBar position="static" color="transparent" elevation={0}
+      sx={{ bgcolor: "background.paper", borderBottom: 1, borderColor: "divider" }}>
+      <Toolbar sx={{ gap: 2, minHeight: 64, px: 2 }}>
         <Typography variant="h5" fontWeight={700} sx={{ flexGrow: 1 }}>AI-SQL</Typography>
-
-        <LanguageToggle size="small" />
-
-        <ThemeSelector />
 
         <ModelSelector providers={providers} value={model} onChange={onModelChange} disabled={submitting} />
 

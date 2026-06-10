@@ -18,6 +18,7 @@ export interface AISQLState {
   sessionId: string | null;
   model: string | null;
   tokenUsage: TokenUsage | null;
+  currentPrompt: string | null;
   rephrased?: string;
   steps: TimelineStep[];
   sql?: string;
@@ -33,7 +34,7 @@ export interface AISQLState {
   completedTurns: CompletedTurn[];
 }
 
-const empty: AISQLState = { sessionId: null, model: null, tokenUsage: null, steps: [], validationIssues: [], narrative: "", finished: false, completedTurns: [] };
+const empty: AISQLState = { sessionId: null, model: null, tokenUsage: null, currentPrompt: null, steps: [], validationIssues: [], narrative: "", finished: false, completedTurns: [] };
 
 /** Internal reset/clear actions (not part of the public SSE event contract). */
 type ReducerAction = AISQLEvent | { event: "_reset"; prompt?: string } | { event: "_clear" };
@@ -43,15 +44,21 @@ function reduce(s: AISQLState, e: ReducerAction): AISQLState {
   if (e.event === "_clear") return { ...empty };
   if (e.event === "_reset") {
     const live = s.steps.length > 0 || !!s.result || !!s.sql;
-    const prompt = (e as { event: "_reset"; prompt?: string }).prompt;
-    const turn: CompletedTurn = { userPrompt: prompt, rephrased: s.rephrased, sql: s.sql, result: s.result, narrative: s.narrative };
-    return { ...empty, completedTurns: live ? [...s.completedTurns, turn] : s.completedTurns };
+    const prompt = (e as { event: "_reset"; prompt?: string }).prompt ?? null;
+    const turn: CompletedTurn = {
+      userPrompt: prompt ?? undefined,
+      rephrased: s.rephrased,
+      sql: s.sql,
+      result: s.result,
+      narrative: s.narrative,
+    };
+    return { ...empty, currentPrompt: prompt, completedTurns: live ? [...s.completedTurns, turn] : s.completedTurns };
   }
   switch (e.event) {
     case "session_start": {
       const prevUsed = s.tokenUsage?.used ?? 0;
       const tu = e.data.tokenUsage ? { ...e.data.tokenUsage, used: prevUsed + (e.data.tokenUsage.used ?? 0) } : null;
-      return { ...empty, completedTurns: s.completedTurns, sessionId: e.data.sessionId, model: e.data.model, tokenUsage: tu };
+      return { ...empty, currentPrompt: s.currentPrompt, completedTurns: s.completedTurns, sessionId: e.data.sessionId, model: e.data.model, tokenUsage: tu };
     }
     case "prompt_rephrased": return { ...s, rephrased: e.data.rephrased };
     case "step_start": {

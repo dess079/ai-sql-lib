@@ -4,6 +4,7 @@
  */
 import type { JSX } from "react";
 import { Box, Typography } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
 import {
   BarChart, Bar, LineChart, Line, AreaChart, Area,
   ScatterChart, Scatter, PieChart, Pie, Cell, ResponsiveContainer,
@@ -26,7 +27,6 @@ const SC_DATA = [
 
 const W = "100%";
 const H = 140;
-const STROKE = PALETTE[0];
 
 /** Mini icon for non-chart output types (mermaid/table). */
 function IconPlaceholder({ icon, label, color }: { icon: string; label: string; color: string }): JSX.Element {
@@ -46,42 +46,45 @@ function IconPlaceholder({ icon, label, color }: { icon: string; label: string; 
  * @returns the mini-chart JSX
  */
 export function ChartPreview({ type }: { type: OutputType }): JSX.Element {
-  if (type === "mermaid") return <IconPlaceholder icon="🔷" label="Diagramme Mermaid" color="#8B5CF6" />;
-  if (type === "table")   return <IconPlaceholder icon="📋" label="Tableau de données" color="#64748b" />;
+  const theme = useTheme();
+  const palette = PALETTE(theme);
+
+  if (type === "mermaid") return <IconPlaceholder icon="🔷" label="Diagramme Mermaid" color={theme.palette.primary.main} />;
+  if (type === "table")   return <IconPlaceholder icon="📋" label="Tableau de données" color={theme.palette.text.secondary} />;
 
   return (
     <ResponsiveContainer width={W} height={H}>
       {type === "bar" ? (
         <BarChart data={XY} margin={{ top: 4, right: 4, left: -28, bottom: 0 }}>
           <Bar dataKey="y" radius={[4, 4, 0, 0]}>
-            {XY.map((_, i) => <Cell key={i} fill={PALETTE[i % PALETTE.length]} />)}
+            {XY.map((_, i) => <Cell key={i} fill={palette[i % palette.length]} />)}
           </Bar>
         </BarChart>
       ) : type === "line" ? (
         <LineChart data={XY} margin={{ top: 4, right: 4, left: -28, bottom: 0 }}>
-          <Line type="monotone" dataKey="y" stroke={STROKE} strokeWidth={2} dot={false} />
+          <Line type="monotone" dataKey="y" stroke={palette[0]} strokeWidth={2} dot={false} />
         </LineChart>
       ) : type === "area" ? (
         <AreaChart data={XY} margin={{ top: 4, right: 4, left: -28, bottom: 0 }}>
           <defs>
             <linearGradient id="prev-area" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%"  stopColor={STROKE} stopOpacity={0.35} />
-              <stop offset="95%" stopColor={STROKE} stopOpacity={0.02} />
+              <stop offset="5%"  stopColor={palette[0]} stopOpacity={0.35} />
+              <stop offset="95%" stopColor={palette[0]} stopOpacity={0.02} />
             </linearGradient>
           </defs>
-          <Area type="monotone" dataKey="y" stroke={STROKE} strokeWidth={2}
+          <Area type="monotone" dataKey="y" stroke={palette[0]} strokeWidth={2}
             fill="url(#prev-area)" dot={false} />
         </AreaChart>
       ) : type === "scatter" ? (
         <ScatterChart margin={{ top: 4, right: 4, left: -28, bottom: 0 }}>
-          <Scatter data={SC_DATA} fill={PALETTE[3]} />
+          <Scatter data={SC_DATA} fill={palette[3]} />
         </ScatterChart>
       ) : (
         /* pie / donut */
         <PieChart>
           <Pie data={PIE_DATA} cx="50%" cy="50%" innerRadius={30} outerRadius={55}
             paddingAngle={3} dataKey="value">
-            {PIE_DATA.map((_, i) => <Cell key={i} fill={PALETTE[i % PALETTE.length]} />)}
+            {PIE_DATA.map((_, i) => <Cell key={i} fill={palette[i % palette.length]} />)}
           </Pie>
         </PieChart>
       )}

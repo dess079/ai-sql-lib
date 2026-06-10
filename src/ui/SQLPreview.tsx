@@ -30,12 +30,12 @@ export function SQLPreview({ sql, issues }: SQLPreviewProps): JSX.Element {
     });
   };
   return (
-    <Box sx={{ position: "relative", bgcolor: "grey.900", color: "grey.50", p: 1.5, borderRadius: 1, my: 1 }}>
+    <Box sx={{ position: "relative", bgcolor: "action.selected", color: "text.primary", border: 1, borderColor: "divider", p: 1.5, borderRadius: 1, my: 1 }}>
       <Tooltip title={copied ? "Copied!" : "Copy SQL"}>
         <IconButton
           size="small"
           onClick={onCopy}
-          sx={{ position: "absolute", top: 4, right: 4, color: "grey.300" }}
+          sx={{ position: "absolute", top: 4, right: 4, color: "text.secondary" }}
           aria-label="Copy SQL"
         >
           {copied ? <CheckIcon fontSize="small" /> : <ContentCopyIcon fontSize="small" />}

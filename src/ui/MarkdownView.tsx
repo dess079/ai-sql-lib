@@ -22,7 +22,7 @@ export function MarkdownView({ content }: MarkdownViewProps): JSX.Element {
   return (
     <Box sx={{
       "& p": { my: 0.5 },
-      "& pre": { p: 1.5, bgcolor: "grey.900", color: "grey.50", borderRadius: 1, overflow: "auto" },
+      "& pre": { p: 1.5, bgcolor: "action.selected", color: "text.primary", border: "1px solid", borderColor: "divider", borderRadius: 1, overflow: "auto" },
       "& code": { fontFamily: "monospace", fontSize: 13 },
       "& table": { borderCollapse: "collapse", my: 1 },
       "& th, & td": { border: 1, borderColor: "divider", px: 1, py: 0.5 },

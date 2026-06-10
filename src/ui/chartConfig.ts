@@ -1,16 +1,23 @@
+import type { Theme } from "@mui/material/styles";
+
 /**
  * Shared chart styling configuration for all Recharts chart types.
- * Defines a professional dark-card tooltip, muted axes, and a modern palette.
+ * Uses the active MUI theme for axis, grid, legend and palette colors.
  */
 
-/** 8-color accessible palette used across all chart types. */
-export const PALETTE = [
-  "#4F8EF7", "#A855F7", "#10B981", "#F59E0B",
-  "#EF4444", "#06B6D4", "#8B5CF6", "#F97316",
+export const PALETTE = (theme: Theme) => [
+  theme.palette.primary.main,
+  theme.palette.secondary.main,
+  theme.palette.success.main,
+  theme.palette.warning.main,
+  theme.palette.error.main,
+  theme.palette.info.main,
+  theme.palette.primary.dark,
+  theme.palette.secondary.dark,
 ];
 
 /** Returns the palette colour at position i (wraps). */
-export const pal = (i: number): string => PALETTE[i % PALETTE.length];
+export const pal = (theme: Theme, i: number): string => PALETTE(theme)[i % PALETTE(theme).length];
 
 /** Outer margin for charts that include X/Y axes. Generous bottom so rotated labels never
  * collide with the Legend row below the chart. */
@@ -18,22 +25,22 @@ export const CHART_MARGIN = { top: 10, right: 20, left: 0, bottom: 80 };
 /** Margin for bar charts: legend is on top, no extra bottom space needed. */
 export const BAR_CHART_MARGIN = { top: 40, right: 20, left: 0, bottom: 80 };
 
-/** Tick and axis line style, shared by both axes. */
-export const AXIS_STYLE = {
-  tick: { fill: "#94a3b8", fontSize: 12 },
-  axisLine: { stroke: "#334155" },
-  tickLine: { stroke: "#334155" },
-};
+export const axisStyle = (theme: Theme) => ({
+  tick: { fill: theme.palette.text.secondary, fontSize: 12 },
+  axisLine: { stroke: theme.palette.divider },
+  tickLine: { stroke: theme.palette.divider },
+});
 
 /**
  * XAxis props factory — rotates labels −45° for readability; long category names
  * stay inside the chart area without clipping the legend.
+ * @param theme   - the active MUI theme
  * @param dataKey - row field to map to the X axis
  * @returns Recharts XAxis props object
  */
-export const xAxisProps = (dataKey: string) => ({
+export const xAxisProps = (theme: Theme, dataKey: string) => ({
   dataKey,
-  ...AXIS_STYLE,
+  ...axisStyle(theme),
   angle: -45,
   textAnchor: "end" as const,
   height: 90,
@@ -41,29 +48,14 @@ export const xAxisProps = (dataKey: string) => ({
 });
 
 /** Shared YAxis props. */
-export const yAxisProps = { ...AXIS_STYLE, width: 56 };
+export const yAxisProps = (theme: Theme) => ({ ...axisStyle(theme), width: 56 });
 
 /** Subtle horizontal grid lines only (no vertical noise). */
-export const gridProps = {
+export const gridProps = (theme: Theme) => ({
   strokeDasharray: "3 3" as const,
-  stroke: "#334155",
+  stroke: theme.palette.divider,
   vertical: false,
-};
-
-/** Dark-card tooltip — legible on both light and dark backgrounds. */
-export const tooltipProps = {
-  contentStyle: {
-    backgroundColor: "#1e293b",
-    border: "1px solid #475569",
-    borderRadius: 8,
-    color: "#f1f5f9",
-    fontSize: 13,
-    padding: "8px 14px",
-  },
-  itemStyle: { color: "#e2e8f0" },
-  labelStyle: { color: "#94a3b8", fontWeight: 600, marginBottom: 4 },
-  cursor: { fill: "rgba(255,255,255,0.05)" },
-};
+});
 
 /** Shared Legend wrapper style. */
-export const legendStyle = { paddingTop: 8, fontSize: 13, color: "#94a3b8" };
+export const legendStyle = (theme: Theme) => ({ paddingTop: 8, fontSize: 13, color: theme.palette.text.secondary });

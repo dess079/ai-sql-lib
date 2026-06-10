@@ -87,7 +87,8 @@ export function ConversationItem({ conversation: c, active, onSelect, onDelete, 
           </Typography>
         </Box>
 
-        <IconButton size="small" onClick={openMenu} aria-label={`Options ${c.title}`}>
+        <IconButton size="small" onClick={openMenu} aria-label={`Options ${c.title}`}
+          sx={{ color: "text.secondary", "&:hover": { color: "text.primary" } }}>
           <MoreVertIcon fontSize="small" />
         </IconButton>
       </Box>

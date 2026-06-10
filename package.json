@@ -15,6 +15,7 @@
   "files": ["dist", "README.md"],
   "scripts": {
     "build": "rm -rf dist && tsc && rollup -c",
+    "prepare": "npm run build",
     "dev": "rollup -c -w",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
@@ -36,7 +37,11 @@
     "mermaid": "^11.4.0"
   },
   "devDependencies": {
-    "shared-components": "file:../../libs/shared-components",
+    "shared-components": "file:../shared-components",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/icons-material": "^7.3.9",
+    "@mui/material": "^7.3.9",
     "@rollup/plugin-babel": "^6.0.4",
     "@rollup/plugin-node-resolve": "^15.3.0",
     "@rollup/plugin-typescript": "^12.1.1",
