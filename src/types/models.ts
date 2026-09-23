@@ -39,3 +39,14 @@ export interface TokenUsage {
   promptTokens?: number;
   completionTokens?: number;
 }
+
+/** Per-provider readiness status from GET /api/ai-sql/provider-readiness. */
+export interface ProviderReadiness {
+  key: ProviderKey;
+  label: string;
+  configured: boolean;
+  reachable: boolean;
+  authenticated: boolean;
+  status: "ready" | "missing-config" | "auth-error" | "unreachable";
+  detail: string;
+}

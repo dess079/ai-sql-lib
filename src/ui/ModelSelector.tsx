@@ -4,6 +4,7 @@
 import type { JSX } from "react";
 import { FormControl, InputLabel, MenuItem, Select, Chip, Box, Typography } from "@mui/material";
 import type { AIProvider } from "../types/models";
+import { parseModelReference } from "../utils/modelRef";
 
 /** Formats a context-window token count as a short human label (e.g. 128k, 1M). */
 function ctxLabel(n: number): string {
@@ -31,6 +32,7 @@ export interface ModelSelectorProps {
  */
 export function ModelSelector({ providers, value, onChange, disabled }: ModelSelectorProps): JSX.Element {
   const enabled = providers.filter((p) => p.enabled);
+
   return (
     <FormControl size="small" sx={{ minWidth: 300 }} disabled={disabled}>
       <InputLabel id="ai-sql-model-label">Model</InputLabel>
@@ -40,8 +42,10 @@ export function ModelSelector({ providers, value, onChange, disabled }: ModelSel
         value={value ?? ""}
         onChange={(e) => onChange(String(e.target.value))}
         renderValue={(v) => {
-          const m = enabled.flatMap((p) => p.models).find((x) => x.id === v);
-          return <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>{m?.label ?? String(v)}</Box>;
+          const ref = parseModelReference(String(v));
+          const m = enabled.flatMap((p) => p.models).find((x) => x.id === ref.model && x.provider === ref.provider);
+
+          return <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>{(m?.label ?? ref.model) || String(v)}</Box>;
         }}
       >
         {enabled.flatMap((p) => [
@@ -49,11 +53,11 @@ export function ModelSelector({ providers, value, onChange, disabled }: ModelSel
             {p.label}
           </MenuItem>,
           ...p.models.map((m) => (
-            <MenuItem key={m.id} value={m.id}>
+            <MenuItem key={`${p.key}-${m.id}`} value={`${p.key}|${m.id}`}>
               <Box sx={{ display: "flex", alignItems: "center", gap: 1, width: "100%" }}>
                 <span>{m.label}</span>
                 <Typography variant="caption" sx={{ color: "text.secondary", ml: 0.5 }}>{ctxLabel(m.contextWindow)}</Typography>
-                {m.id === value && <Chip size="small" color="primary" label="★" sx={{ ml: "auto" }} />}
+                {value === `${p.key}|${m.id}` && <Chip size="small" color="primary" label="★" sx={{ ml: "auto" }} />}
               </Box>
             </MenuItem>
           )),

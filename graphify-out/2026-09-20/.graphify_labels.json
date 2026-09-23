@@ -1,0 +1,16 @@
+{
+  "0": "devDependencies",
+  "1": "ui/index.ts",
+  "2": "package.json",
+  "3": "AISQLChatBody.tsx",
+  "4": "AISQLChat.tsx",
+  "5": "events.ts",
+  "6": "ResultsDisplay.tsx",
+  "7": "conversation.ts",
+  "8": "compilerOptions",
+  "9": "useNewSessionDraft.ts",
+  "10": "schema.ts",
+  "11": "@sd/ai-sql",
+  "12": "rollup.config.js",
+  "13": "mermaid"
+}

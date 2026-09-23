@@ -11,19 +11,25 @@ export function useSessionStorage(): [string | null, (id: string | null) => void
   const [sessionId, setSessionIdState] = useState<string | null>(() => {
     if (typeof window === "undefined") return null;
     const url = new URL(window.location.href);
-    return url.searchParams.get("session") ?? window.localStorage.getItem(KEY);
+
+    return url.searchParams.get("session");
   });
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+
     const url = new URL(window.location.href);
+
     if (sessionId) {
       url.searchParams.set("session", sessionId);
-      window.localStorage.setItem(KEY, sessionId);
     } else {
       url.searchParams.delete("session");
+    }
+
+    if (window.localStorage.getItem(KEY)) {
       window.localStorage.removeItem(KEY);
     }
+
     window.history.replaceState({}, "", url.toString());
   }, [sessionId]);
 

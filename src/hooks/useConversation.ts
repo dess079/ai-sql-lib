@@ -12,6 +12,8 @@ export interface UseConversationResult {
   reload: () => void;
   loadMessages: (id: string) => Promise<Message[]>;
   remove: (id: string) => Promise<void>;
+  removeMany: (ids: string[]) => Promise<void>;
+  copy: (id: string) => Promise<Conversation>;
   rename: (id: string, title: string) => Promise<void>;
 }
 
@@ -27,15 +29,25 @@ export function useConversation(backendUrl: string, userId = "default", authToke
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | undefined>();
+  const hasConversations = conversations.length > 0;
 
   const reload = useCallback(() => {
-    setLoading(true); setError(undefined);
+    if (!hasConversations) {
+      setLoading(true);
+    }
+
+    setError(undefined);
+
     fetch(`${backendUrl}/api/ai-sql/conversations?userId=${encodeURIComponent(userId)}`, { headers: authHdr })
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
       .then((data: Conversation[]) => setConversations(data))
       .catch((e: Error) => setError(e.message))
-      .finally(() => setLoading(false));
-  }, [backendUrl, userId, authToken]);
+      .finally(() => {
+        if (!hasConversations) {
+          setLoading(false);
+        }
+      });
+  }, [backendUrl, userId, authToken, hasConversations]);
 
   useEffect(() => { reload(); }, [reload]);
 
@@ -51,6 +63,37 @@ export function useConversation(backendUrl: string, userId = "default", authToke
     reload();
   }, [backendUrl, authToken, reload]);
 
+  const removeMany = useCallback(async (ids: string[]): Promise<void> => {
+    const uniqueIds = [...new Set(ids.map((id) => id.trim()).filter(Boolean))];
+    if (uniqueIds.length === 0) {
+      return;
+    }
+
+    for (const id of uniqueIds) {
+      const r = await fetch(`${backendUrl}/api/ai-sql/conversations/${encodeURIComponent(id)}`, {
+        method: "DELETE",
+        headers: authHdr,
+      });
+
+      if (!r.ok) {
+        throw new Error(`HTTP ${r.status}`);
+      }
+    }
+
+    reload();
+  }, [backendUrl, authToken, reload]);
+
+  const copy = useCallback(async (id: string): Promise<Conversation> => {
+    const r = await fetch(`${backendUrl}/api/ai-sql/conversations/${encodeURIComponent(id)}/copy`, {
+      method: "POST",
+      headers: authHdr,
+    });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const cloned = await r.json() as Conversation;
+    reload();
+    return cloned;
+  }, [backendUrl, authToken, reload]);
+
   const rename = useCallback(async (id: string, title: string): Promise<void> => {
     const r = await fetch(`${backendUrl}/api/ai-sql/conversations/${encodeURIComponent(id)}`, {
       method: "PATCH",
@@ -61,5 +104,5 @@ export function useConversation(backendUrl: string, userId = "default", authToke
     reload();
   }, [backendUrl, authToken, reload]);
 
-  return { conversations, loading, error, reload, loadMessages, remove, rename };
+  return { conversations, loading, error, reload, loadMessages, remove, removeMany, copy, rename };
 }

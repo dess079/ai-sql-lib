@@ -4,6 +4,7 @@
 import type { JSX } from "react";
 import { Box, LinearProgress, Tooltip, Typography } from "@mui/material";
 import type { TokenUsage } from "../types/models";
+import { parseModelReference } from "../utils/modelRef";
 
 /** Props for {@link TokenUsageBar}. */
 export interface TokenUsageBarProps { usage: TokenUsage | null; }
@@ -17,13 +18,17 @@ export interface TokenUsageBarProps { usage: TokenUsage | null; }
  */
 export function TokenUsageBar({ usage }: TokenUsageBarProps): JSX.Element | null {
   if (!usage) return null;
+
   const pct = usage.max > 0 ? Math.min(100, (usage.used / usage.max) * 100) : 0;
   const color: "primary" | "warning" | "error" = pct >= 90 ? "error" : pct >= 80 ? "warning" : "primary";
+
+  const model = parseModelReference(usage.model).model;
+
   return (
     <Tooltip title={`${usage.used.toLocaleString()} / ${usage.max.toLocaleString()} tokens`}>
       <Box sx={{ minWidth: 160, display: "flex", flexDirection: "column", gap: 0.25 }}>
         <Typography variant="caption" sx={{ display: "flex", justifyContent: "space-between" }}>
-          <span>{usage.model}</span>
+          <span>{model}</span>
           <span>{Math.round(pct)}%</span>
         </Typography>
         <LinearProgress variant="determinate" value={pct} color={color} />

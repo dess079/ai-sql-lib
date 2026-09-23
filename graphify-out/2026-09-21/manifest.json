@@ -1,0 +1,380 @@
+{
+  "package.json": {
+    "mtime": 1786895077.198858,
+    "seen": 1789938238.8664262,
+    "ast_hash": "89b5bb82e6272e3c4843be79805c6c67",
+    "semantic_hash": ""
+  },
+  "rollup.config.js": {
+    "mtime": 1778780223.4464662,
+    "seen": 1789938238.866427,
+    "ast_hash": "b90d5cb5a725aeae9e470e6a6b60662f",
+    "semantic_hash": ""
+  },
+  "src/hooks/index.ts": {
+    "mtime": 1781282093.9387116,
+    "seen": 1789938238.866428,
+    "ast_hash": "972190cc046ae31d5f48bc375352cdb6",
+    "semantic_hash": ""
+  },
+  "src/hooks/sseUtils.ts": {
+    "mtime": 1781061498.6650558,
+    "seen": 1789938238.866428,
+    "ast_hash": "d72e53f28710d77f9540408fb69eb277",
+    "semantic_hash": ""
+  },
+  "src/hooks/useAISQL.ts": {
+    "mtime": 1781273104.9271173,
+    "seen": 1789938238.8664289,
+    "ast_hash": "e9865a037fe9486d86aa5dd0ffd79518",
+    "semantic_hash": ""
+  },
+  "src/hooks/useAISQLChatSession.ts": {
+    "mtime": 1781285494.29887,
+    "seen": 1789938238.8664289,
+    "ast_hash": "0686ef844f8bf878ff7d420125b5bfe1",
+    "semantic_hash": ""
+  },
+  "src/hooks/useConversation.ts": {
+    "mtime": 1781295036.3900654,
+    "seen": 1789938238.86643,
+    "ast_hash": "5209644b3ee9232c528c91a96fab6a8f",
+    "semantic_hash": ""
+  },
+  "src/hooks/useConversationOutcome.ts": {
+    "mtime": 1781286402.4801004,
+    "seen": 1789938238.866435,
+    "ast_hash": "b174e16dca5732d527b00840382bd6ed",
+    "semantic_hash": ""
+  },
+  "src/hooks/useConversationSelection.ts": {
+    "mtime": 1781281942.950413,
+    "seen": 1789938238.866436,
+    "ast_hash": "63a1ff468f26ec951114786bb8013053",
+    "semantic_hash": ""
+  },
+  "src/hooks/useLastConversationSelection.ts": {
+    "mtime": 1789952400.159091,
+    "seen": 1789952847.218938,
+    "ast_hash": "2a391c2b8823f2f3c0c7446e7d4708d9",
+    "semantic_hash": ""
+  },
+  "src/hooks/useModels.ts": {
+    "mtime": 1780947725.8593342,
+    "seen": 1789938238.8664372,
+    "ast_hash": "a557125e52c585bcde5a28a6db896b91",
+    "semantic_hash": ""
+  },
+  "src/hooks/useNewSessionDraft.ts": {
+    "mtime": 1781285494.2988188,
+    "seen": 1789938238.8664372,
+    "ast_hash": "02b3b08492d34f6689ef3a0d8860b3e8",
+    "semantic_hash": ""
+  },
+  "src/hooks/useProviderReadiness.ts": {
+    "mtime": 1781282093.934259,
+    "seen": 1789938238.8664372,
+    "ast_hash": "cd5e6605e78d9a7570279d4ee933d166",
+    "semantic_hash": ""
+  },
+  "src/hooks/useSSEStream.ts": {
+    "mtime": 1780755541.1686351,
+    "seen": 1789938238.866438,
+    "ast_hash": "f83a4546cdb5dd8747e5c3257562e613",
+    "semantic_hash": ""
+  },
+  "src/hooks/useSessionHistory.ts": {
+    "mtime": 1781286402.4801662,
+    "seen": 1789938238.866438,
+    "ast_hash": "09e2453c7ae463deb123e7b9c761084a",
+    "semantic_hash": ""
+  },
+  "src/hooks/useSessionStorage.ts": {
+    "mtime": 1781286402.480087,
+    "seen": 1789938238.866438,
+    "ast_hash": "b95fa5c7b85231e3e33e43d095921c01",
+    "semantic_hash": ""
+  },
+  "src/hooks/useSubmitQuery.ts": {
+    "mtime": 1780755541.1669137,
+    "seen": 1789938238.8664389,
+    "ast_hash": "cc8de08500d7e8022af81acd9eed9d63",
+    "semantic_hash": ""
+  },
+  "src/index.ts": {
+    "mtime": 1778606472.8087451,
+    "seen": 1789938238.8664389,
+    "ast_hash": "58a6c3654c16808b75c365b2658bb7d8",
+    "semantic_hash": ""
+  },
+  "src/types/conversation.ts": {
+    "mtime": 1781273104.9331455,
+    "seen": 1789938238.8664389,
+    "ast_hash": "0e4c7bc181965a51357623fee5ad8e73",
+    "semantic_hash": ""
+  },
+  "src/types/events.ts": {
+    "mtime": 1778780670.6884263,
+    "seen": 1789938238.8664398,
+    "ast_hash": "8dc35ea8c45645a26be9d9970d5b8335",
+    "semantic_hash": ""
+  },
+  "src/types/models.ts": {
+    "mtime": 1781282093.938698,
+    "seen": 1789938238.8664398,
+    "ast_hash": "3238e5a1a5b4780c844e5b0730e13885",
+    "semantic_hash": ""
+  },
+  "src/types/schema.ts": {
+    "mtime": 1778606472.8087547,
+    "seen": 1789938238.8664398,
+    "ast_hash": "5eb0b893d8a38de116c2d573000d4feb",
+    "semantic_hash": ""
+  },
+  "src/ui/AISQLChat.tsx": {
+    "mtime": 1789995791.776248,
+    "seen": 1789996059.532951,
+    "ast_hash": "3c4fa4903c2ba5d75fc4a5a0b1999e02",
+    "semantic_hash": ""
+  },
+  "src/ui/AISQLChatBody.tsx": {
+    "mtime": 1790044243.9743426,
+    "seen": 1790044360.328348,
+    "ast_hash": "0ff38e6d3d1a8624d7709ff3ec035199",
+    "semantic_hash": ""
+  },
+  "src/ui/AISQLToolbar.tsx": {
+    "mtime": 1789949355.1810331,
+    "seen": 1789949639.834943,
+    "ast_hash": "e21759b35b0e1218a82bba5500000c0c",
+    "semantic_hash": ""
+  },
+  "src/ui/ChartTooltip.tsx": {
+    "mtime": 1780717172.3867905,
+    "seen": 1789938238.866442,
+    "ast_hash": "a1ee5610e66be37035803caf1ab7e21f",
+    "semantic_hash": ""
+  },
+  "src/ui/ChartView.tsx": {
+    "mtime": 1780717172.3767738,
+    "seen": 1789938238.866442,
+    "ast_hash": "1d25a3cc924011a98934480336ec097b",
+    "semantic_hash": ""
+  },
+  "src/ui/ChatMessage.tsx": {
+    "mtime": 1780755147.1526694,
+    "seen": 1789938238.866442,
+    "ast_hash": "ffcd22eb34f8d7cf0eba01474882c922",
+    "semantic_hash": ""
+  },
+  "src/ui/ConversationItem.tsx": {
+    "mtime": 1790044671.1848526,
+    "seen": 1790044794.108434,
+    "ast_hash": "4975e19e73e97c1e4fc0d5075798c22c",
+    "semantic_hash": ""
+  },
+  "src/ui/ConversationList.tsx": {
+    "mtime": 1790044676.8338003,
+    "seen": 1790044794.108434,
+    "ast_hash": "aa02b6cce6ec0f5835f0cf23d01397a3",
+    "semantic_hash": ""
+  },
+  "src/ui/ConversationSidebar.tsx": {
+    "mtime": 1781285494.2988636,
+    "seen": 1789938238.866443,
+    "ast_hash": "8f14c3ad6bf64625ec2df76515fd0f73",
+    "semantic_hash": ""
+  },
+  "src/ui/HistoryMessage.tsx": {
+    "mtime": 1790021979.1191373,
+    "seen": 1790042572.483189,
+    "ast_hash": "380d0dc882b07ccc5c90e876e0a7597d",
+    "semantic_hash": ""
+  },
+  "src/ui/HistoryMessages.tsx": {
+    "mtime": 1780755751.8267903,
+    "seen": 1789938238.866444,
+    "ast_hash": "4007e4ff27fb966d4b6ac5815c62cbb6",
+    "semantic_hash": ""
+  },
+  "src/ui/HistoryOutcomeAlert.tsx": {
+    "mtime": 1781286402.500665,
+    "seen": 1789938238.866444,
+    "ast_hash": "5619355824ce411258b70d0b6d4a86b9",
+    "semantic_hash": ""
+  },
+  "src/ui/MarkdownView.tsx": {
+    "mtime": 1790011666.9168034,
+    "seen": 1790012326.3921752,
+    "ast_hash": "5a9edfd21140e6ad9ea06edd11fe9439",
+    "semantic_hash": ""
+  },
+  "src/ui/MermaidView.tsx": {
+    "mtime": 1790043561.5523763,
+    "seen": 1790043679.4770188,
+    "ast_hash": "8016d50366f5b9f9580c99fc967b0d0d",
+    "semantic_hash": ""
+  },
+  "src/ui/MessageHeaderChips.tsx": {
+    "mtime": 1781273104.9332302,
+    "seen": 1789938238.866445,
+    "ast_hash": "c9ee1e8693ab38151f62d0e050eb76b9",
+    "semantic_hash": ""
+  },
+  "src/ui/MessageRow.tsx": {
+    "mtime": 1781273104.9331458,
+    "seen": 1789938238.866446,
+    "ast_hash": "69618cb47e0aa7b3311fb51c163bed6f",
+    "semantic_hash": ""
+  },
+  "src/ui/ModelSelector.tsx": {
+    "mtime": 1781273104.9331377,
+    "seen": 1789938238.866446,
+    "ast_hash": "406b48bb651b739b467b78d758497fda",
+    "semantic_hash": ""
+  },
+  "src/ui/ProcessTimeline.tsx": {
+    "mtime": 1778601830.3857749,
+    "seen": 1789938238.866446,
+    "ast_hash": "f8bfd36e065f3442ca413de3d33af8b9",
+    "semantic_hash": ""
+  },
+  "src/ui/PromptInput.tsx": {
+    "mtime": 1789995782.8975334,
+    "seen": 1789996059.53296,
+    "ast_hash": "ee52184f37b2da90a10f8e15761eaac8",
+    "semantic_hash": ""
+  },
+  "src/ui/ProviderStatusBadge.tsx": {
+    "mtime": 1781282093.938682,
+    "seen": 1789938238.8664472,
+    "ast_hash": "8bc1e757502f9d8f088b90ab95fa0404",
+    "semantic_hash": ""
+  },
+  "src/ui/ProviderStatusBar.tsx": {
+    "mtime": 1781282093.9386966,
+    "seen": 1789938238.8664472,
+    "ast_hash": "a9a2b96548541243ccdfe05aadbca558",
+    "semantic_hash": ""
+  },
+  "src/ui/ResponseMetaChips.tsx": {
+    "mtime": 1781273104.9331286,
+    "seen": 1789938238.866448,
+    "ast_hash": "0d6477400b83756b61c258e4ef7b7efd",
+    "semantic_hash": ""
+  },
+  "src/ui/ResultsDisplay.tsx": {
+    "mtime": 1780888748.9392576,
+    "seen": 1789938238.866448,
+    "ast_hash": "551d51b08f02e0a36689ea60d10ccfb7",
+    "semantic_hash": ""
+  },
+  "src/ui/ResultsTable.tsx": {
+    "mtime": 1778945536.3473485,
+    "seen": 1789938238.8664489,
+    "ast_hash": "4dbc2bc9270c21bfa029fa8864503e80",
+    "semantic_hash": ""
+  },
+  "src/ui/SQLPreview.tsx": {
+    "mtime": 1779286846.9141755,
+    "seen": 1789938238.8664489,
+    "ast_hash": "f060b4194b01871f424c81329ab48dcd",
+    "semantic_hash": ""
+  },
+  "src/ui/SchemaViewer.tsx": {
+    "mtime": 1778601830.4052668,
+    "seen": 1789938238.8664489,
+    "ast_hash": "fd074435703afbc1a39778be418f5388",
+    "semantic_hash": ""
+  },
+  "src/ui/SessionDetailDialog.tsx": {
+    "mtime": 1779028428.3166335,
+    "seen": 1789938238.8664489,
+    "ast_hash": "29418d3ad7515a6353cf93916334b8b3",
+    "semantic_hash": ""
+  },
+  "src/ui/TokenUsageBar.tsx": {
+    "mtime": 1781273104.9331408,
+    "seen": 1789938238.8664498,
+    "ast_hash": "a70c886f64fe579a5bc04bff75089b30",
+    "semantic_hash": ""
+  },
+  "src/ui/aiCopyUtils.ts": {
+    "mtime": 1780888748.9497867,
+    "seen": 1789938238.8664498,
+    "ast_hash": "96f4affab9acd455dcd200416c1272f5",
+    "semantic_hash": ""
+  },
+  "src/ui/chartConfig.ts": {
+    "mtime": 1780717172.3767529,
+    "seen": 1789938238.8664498,
+    "ast_hash": "fcc681f61216af1e049c19349789f595",
+    "semantic_hash": ""
+  },
+  "src/ui/chartFormat.ts": {
+    "mtime": 1779287067.2552211,
+    "seen": 1789938238.866451,
+    "ast_hash": "ff753bd09e974080f7811f3e188e4d4f",
+    "semantic_hash": ""
+  },
+  "src/ui/example-prompts/ChartPreview.tsx": {
+    "mtime": 1781295036.3756864,
+    "seen": 1789938238.866451,
+    "ast_hash": "8833bf6826d0b8d489e5e860d1d675d0",
+    "semantic_hash": ""
+  },
+  "src/ui/example-prompts/ExamplePromptsButton.tsx": {
+    "mtime": 1781286544.639225,
+    "seen": 1789938238.866451,
+    "ast_hash": "4b4415fab4b0c5a64a14562dbf25170b",
+    "semantic_hash": ""
+  },
+  "src/ui/example-prompts/ExamplePromptsPanel.tsx": {
+    "mtime": 1781286544.4843671,
+    "seen": 1789938238.866452,
+    "ast_hash": "9f4fbb3a1bc42ee37581aae302944b97",
+    "semantic_hash": ""
+  },
+  "src/ui/example-prompts/examplePrompts.ts": {
+    "mtime": 1781295036.3756773,
+    "seen": 1789938238.866452,
+    "ast_hash": "499e3b1aab6c316c62c3c6699b56729f",
+    "semantic_hash": ""
+  },
+  "src/ui/example-prompts/index.ts": {
+    "mtime": 1781286544.7713966,
+    "seen": 1789938238.866452,
+    "ast_hash": "4280bc91137f18a1f3c5f8c609f4be9b",
+    "semantic_hash": ""
+  },
+  "src/ui/index.ts": {
+    "mtime": 1781286521.8673317,
+    "seen": 1789938238.866453,
+    "ast_hash": "f3d2a164263336aec3e53d50243cab9c",
+    "semantic_hash": ""
+  },
+  "src/utils/modelRef.ts": {
+    "mtime": 1781273104.933131,
+    "seen": 1789938238.866453,
+    "ast_hash": "7a2732acf777c22fefaecfe357be5a87",
+    "semantic_hash": ""
+  },
+  "tsconfig.json": {
+    "mtime": 1778606472.7982335,
+    "seen": 1789938238.866453,
+    "ast_hash": "17dd614b73d0b66b391ee28f745f7d61",
+    "semantic_hash": ""
+  },
+  "README.md": {
+    "mtime": 1778606472.798264,
+    "seen": 1789938238.8664541,
+    "ast_hash": "9c9085e409b4c8bc9a1650bb413c76b5",
+    "semantic_hash": ""
+  },
+  "pnpm-workspace.yaml": {
+    "mtime": 1786895061.5223813,
+    "seen": 1789938238.8664541,
+    "ast_hash": "b65e225b6cea7f294287ceb13e72d115",
+    "semantic_hash": ""
+  }
+}

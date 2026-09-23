@@ -11,7 +11,7 @@ import type { QueryResult } from "../types/schema";
 export interface TimelineStep { step: number; label: StepLabel; message: string; doneAt?: number; }
 
 /** A completed turn, archived when a new query starts in the same session. */
-export interface CompletedTurn { userPrompt?: string; rephrased?: string; sql?: string; result?: QueryResult; narrative: string; }
+export interface CompletedTurn { userPrompt?: string; model?: string; provider?: string; rephrased?: string; sql?: string; result?: QueryResult; narrative: string; }
 
 /** Aggregated state of an active session. */
 export interface AISQLState {
@@ -37,7 +37,7 @@ export interface AISQLState {
 const empty: AISQLState = { sessionId: null, model: null, tokenUsage: null, currentPrompt: null, steps: [], validationIssues: [], narrative: "", finished: false, completedTurns: [] };
 
 /** Internal reset/clear actions (not part of the public SSE event contract). */
-type ReducerAction = AISQLEvent | { event: "_reset"; prompt?: string } | { event: "_clear" };
+type ReducerAction = AISQLEvent | { event: "_reset"; prompt?: string; provider?: string } | { event: "_clear" };
 
 /** Reducer applying one SSE event to the session state. */
 function reduce(s: AISQLState, e: ReducerAction): AISQLState {
@@ -45,8 +45,11 @@ function reduce(s: AISQLState, e: ReducerAction): AISQLState {
   if (e.event === "_reset") {
     const live = s.steps.length > 0 || !!s.result || !!s.sql;
     const prompt = (e as { event: "_reset"; prompt?: string }).prompt ?? null;
+    const provider = (e as { event: "_reset"; provider?: string }).provider ?? null;
     const turn: CompletedTurn = {
       userPrompt: prompt ?? undefined,
+      model: s.model ?? undefined,
+      provider: provider ?? undefined,
       rephrased: s.rephrased,
       sql: s.sql,
       result: s.result,
@@ -84,11 +87,11 @@ function reduce(s: AISQLState, e: ReducerAction): AISQLState {
 
 /** Drives an AI-SQL session and exposes the aggregated state + an event handler. */
 export function useAISQL(initialSessionId: string | null = null): {
-  state: AISQLState; apply: (e: AISQLEvent) => void; reset: (prompt?: string) => void; clear: () => void;
+  state: AISQLState; apply: (e: AISQLEvent) => void; reset: (prompt?: string, provider?: string) => void; clear: () => void;
 } {
   const [state, dispatch] = useReducer(reduce, { ...empty, sessionId: initialSessionId });
   const apply = useCallback((e: AISQLEvent) => dispatch(e), []);
-  const reset = useCallback((prompt?: string) => dispatch({ event: "_reset", prompt } as unknown as AISQLEvent), []);
+  const reset = useCallback((prompt?: string, provider?: string) => dispatch({ event: "_reset", prompt, provider } as unknown as AISQLEvent), []);
   const clear = useCallback(() => dispatch({ event: "_clear" } as unknown as AISQLEvent), []);
   return { state, apply, reset, clear };
 }

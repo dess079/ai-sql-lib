@@ -51,7 +51,7 @@ export function ExamplePromptsButton({ onSelect, disabled }: ExamplePromptsButto
 
       <Dialog open={open} onClose={() => setOpen(false)} maxWidth="md" fullWidth>
         <DialogTitle sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", py: 1.5 }}>
-          <Typography variant="subtitle1" component="span" fontWeight="bold">
+          <Typography variant="subtitle1" component="span" sx={{ fontWeight: "bold" }}>
             Exemples de prompts — cabinet dentaire
           </Typography>
           <Box sx={{ display: "flex", gap: 0.5, alignItems: "center" }}>

@@ -1,121 +1,186 @@
-/**
- * Drop-in AI-SQL chat experience. Composes hooks + UI components into a single
- * widget that consumers embed with a single tag.
- *
- * @example
- * ```tsx
- * <AISQLChat backendUrl="http://localhost:4000" userId="default" />
- * ```
- */
+/** Drop-in AI-SQL chat experience — UI déléguée à shared-components (AiChatPanel + AiConversationSidebar). */
 import type { JSX } from "react";
-import { useEffect, useRef, useState } from "react";
-import { Box, Drawer, Snackbar } from "@mui/material";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Box, Snackbar } from "@mui/material";
+import { AiChatPanel, AiConversationSidebar, AiSessionDetailDialog, type AiChatTurn, type AiChatMessage, type AiConversationRow } from "shared-components";
 import type { TokenUsage } from "../types/models";
 import { useModels } from "../hooks/useModels";
 import { useSubmitQuery } from "../hooks/useSubmitQuery";
+import { useConversationSelection } from "../hooks/useConversationSelection";
+import { useAISQLChatSession } from "../hooks/useAISQLChatSession";
 import { useSSEStream } from "../hooks/useSSEStream";
 import { useAISQL } from "../hooks/useAISQL";
+import { buildModelReference, parseModelReference } from "../utils/modelRef";
 import { useConversation } from "../hooks/useConversation";
 import { useSessionStorage } from "../hooks/useSessionStorage";
 import { useSessionHistory } from "../hooks/useSessionHistory";
-import { ConversationList } from "./ConversationList";
-import { PromptInput } from "./PromptInput";
-import { AISQLChatBody } from "./AISQLChatBody";
+import { useNewSessionDraft } from "../hooks/useNewSessionDraft";
+import { useLastConversationSelection } from "../hooks/useLastConversationSelection";
+import { useConversationOutcome } from "../hooks/useConversationOutcome";
 import { AISQLToolbar } from "./AISQLToolbar";
-import { SessionDetailDialog } from "./SessionDetailDialog";
+import { toAiChatMessage } from "./aiMapping";
 
 /** Props for {@link AISQLChat}. */
 export interface AISQLChatProps {
   backendUrl: string;
   userId?: string;
-  /** Initial drawer width in px. */
   sidebarWidth?: number;
-  /** Optional Bearer token passed as `Authorization: Bearer <token>` to all requests. */
   authToken?: string;
+  /** External model reference (`provider|model`) overriding the auto-detected one. */
+  initialModelRef?: string | null;
+  /**
+   * Optional replacement for the built-in model selector (e.g. shared-components'
+   * LlmModelSelector). Receives the current `provider|model` ref and change callback.
+   */
+  modelSelector?: (props: { value: string | null; onChange: (ref: string | null) => void; disabled?: boolean }) => JSX.Element;
 }
 
-/**
- * Main AI-SQL chat widget. Composes sidebar, toolbar, body and prompt.
- * @param props.backendUrl - absolute backend URL (no trailing slash)
- * @param props.userId - user id (default "default")
- * @param props.sidebarWidth - drawer width in px (default 280)
- * @returns the chat UI
- */
-export function AISQLChat({ backendUrl, userId = "default", sidebarWidth = 280, authToken }: AISQLChatProps): JSX.Element {
+/** Main AI-SQL chat widget — orchestration only, rendering lives in shared-components. */
+export function AISQLChat({ backendUrl, userId = "default", sidebarWidth = 280, authToken, initialModelRef, modelSelector }: AISQLChatProps): JSX.Element {
   const { providers } = useModels(backendUrl, authToken);
   const [model, setModel] = useState<string | null>(null);
   useEffect(() => {
-    if (!model && providers.length > 0) {
-      const all = providers.filter((p) => p.enabled).flatMap((p) => p.models);
-      setModel((all.find((m) => m.recommended) ?? all[0])?.id ?? null);
+    if (initialModelRef) {
+      setModel(initialModelRef);
+      return;
     }
-  }, [providers, model]);
-
+    if (!model && providers.length > 0) {
+      const enabled = providers.filter((p) => p.enabled);
+      const preferred = enabled.flatMap((p) => p.models.filter((m) => m.recommended).map((m) => buildModelReference(p.key, m.id)));
+      const all = enabled.flatMap((p) => p.models.map((m) => buildModelReference(p.key, m.id)));
+      setModel(preferred[0] ?? all[0] ?? null);
+    }
+  }, [providers, model, initialModelRef]);
   const [sessionId, setSessionId] = useSessionStorage();
   const [conversationId, setConversationId] = useState<string | null>(null);
-  const [resumed, setResumed] = useState(false);
   const [streaming, setStreaming] = useState(false);
   const { state, apply, reset, clear } = useAISQL(sessionId);
+  const { saveSuccess, saveError, readOutcome } = useConversationOutcome();
+  const selectedModelRef = parseModelReference(model);
+  const selectedProvider = providers.find((p) => p.key === selectedModelRef.provider);
   const { submit, submitting } = useSubmitQuery(backendUrl, authToken);
-  const { conversations, loading, reload, remove, rename, loadMessages } = useConversation(backendUrl, userId, authToken);
-  const { historyMessages, loadHistory, clearHistory, detailOpen, detailTitle, detailMsgs, detailLoading, openDetail, closeDetail } = useSessionHistory(loadMessages);
-
-  const allModels = providers.filter((p) => p.enabled).flatMap((p) => p.models);
-  const historyTokens = historyMessages.reduce((sum, m) => sum + Math.ceil(m.content.length / 4), 0);
-  const effectiveUsage: TokenUsage | null = model
-    ? { model, used: state.tokenUsage?.model === model ? state.tokenUsage.used : historyTokens, max: allModels.find((m) => m.id === model)?.contextWindow ?? 0 }
-    : null;
+  const { conversations, loading, reload, remove, removeMany, copy, rename, loadMessages } = useConversation(backendUrl, userId, authToken);
+  const { historyMessages, loadHistory, clearHistory, detailOpen, detailTitle, detailMsgs, detailLoading, openDetail, closeDetail } = useSessionHistory(loadMessages, readOutcome);
+  const { listConversations, draftConversationId, startNewSession, onSubmitResolved } = useNewSessionDraft(conversations, userId);
+  useLastConversationSelection({ userId, conversationId, conversations, setConversationId, setSessionId, clear, loadHistory, skip: !!draftConversationId });
+  const { activeSidebarId, activeTitle, onSubmit, onSelectConversation, onNewSession } = useAISQLChatSession({ conversations: listConversations, conversationId, draftConversationId, selectedProviderLabel: selectedProvider?.label ?? selectedProvider?.key, model, userId, submit, setConversationId, setSessionId, setStreaming, reset, clear, clearHistory, apply, onSubmitResolved, startNewSession, loadHistory });
+  const { selectedIds, toggleSelectAll, deleteSelected, deleteOne, copySession } = useConversationSelection({
+    conversationId,
+    conversations,
+    clear,
+    clearHistory,
+    remove,
+    removeMany,
+    copy,
+    setConversationId,
+  });
 
   const streamingRef = useRef(false);
   streamingRef.current = streaming;
-
   useSSEStream({
     backendUrl, sessionId, authToken, onEvent: apply,
     onClose: (r) => {
       const was = streamingRef.current;
       setStreaming(false);
-      if (r === "complete") reload();
-      else if (r === "error" && was) apply({ event: "error", data: { error: "La connexion au serveur a été perdue. Veuillez réessayer.", code: "STREAM_ERROR" } });
+      if (r === "complete") {
+        if (conversationId) saveSuccess(conversationId);
+        reload();
+      } else if (r === "error" && was) {
+        const message = "La connexion au serveur a été perdue. Veuillez réessayer.";
+        if (conversationId) saveError(conversationId, message);
+        apply({ event: "error", data: { error: message, code: "STREAM_ERROR" } });
+      }
     },
   });
-  useEffect(() => { if (sessionId && state.steps.length === 0) setResumed(true); }, [sessionId, state.steps.length]);
+  useEffect(() => { if (state.error && conversationId) saveError(conversationId, state.error); }, [conversationId, saveError, state.error]);
 
-  const onSubmit = async (prompt: string): Promise<void> => {
-    reset(prompt); setStreaming(true); clearHistory();
-    try {
-      const res = await submit(prompt, { model: model ?? undefined, conversationId: conversationId ?? undefined, userId });
-      setSessionId(res.sessionId); setConversationId(res.conversationId);
-    } catch (e) {
-      setStreaming(false);
-      apply({ event: "error", data: { error: e instanceof Error ? e.message : "La requête a échoué. Veuillez réessayer.", code: "SUBMIT_ERROR" } });
-    }
-  };
+  /** Mapping live state + completed turns → shared AiChatTurn[]. */
+  const turns: AiChatTurn[] = useMemo(() => {
+    const archived: AiChatTurn[] = state.completedTurns.map((t, i) => ({
+      id: `turn-${i}`,
+      userPrompt: t.userPrompt,
+      model: t.model,
+      provider: t.provider,
+      response: { rephrased: t.rephrased, code: t.sql, codeLanguage: "sql", result: t.result, narrative: t.narrative, steps: [], finished: true },
+    }));
+    const live: AiChatTurn[] = state.currentPrompt ? [{
+      id: "live",
+      userPrompt: state.currentPrompt,
+      model: state.model ?? model ?? undefined,
+      provider: selectedProvider?.label ?? selectedProvider?.key,
+      response: {
+        rephrased: state.rephrased,
+        code: state.sql,
+        codeLanguage: "sql",
+        codeIssues: state.validationIssues,
+        result: state.result,
+        narrative: state.narrative || undefined,
+        steps: state.steps,
+        finished: state.finished,
+        error: state.error,
+        retryAttempt: state.retryAttempt,
+        retryMax: state.retryMax,
+      },
+    }] : [];
+    return [...archived, ...live];
+  }, [state, model, selectedProvider]);
 
-  const activeTitle = conversations.find((c) => c.id === conversationId)?.title ?? "";
+  const history: AiChatMessage[] = useMemo(
+    () => historyMessages.map(toAiChatMessage),
+    [historyMessages],
+  );
+
+  const sidebarRows: AiConversationRow[] = useMemo(
+    () => listConversations.map((c) => ({ id: c.id, backendId: c.backendId, title: c.title, model: c.model, updatedAt: c.updatedAt, isNew: c.isNew })),
+    [listConversations],
+  );
+
+  const modelSlot = useMemo(() => (
+    modelSelector ? modelSelector({ value: model, onChange: setModel }) : null
+  ), [modelSelector, model]);
+
+  const allModels = providers.filter((p) => p.enabled).flatMap((p) => p.models);
+  const historyTokens = historyMessages.reduce((sum, m) => sum + Math.ceil(m.content.length / 4), 0);
+  const activeTokenModel = parseModelReference(state.tokenUsage?.model).model;
+  const effectiveUsage: TokenUsage | null = model
+    ? { model, used: activeTokenModel === model ? state.tokenUsage?.used ?? historyTokens : historyTokens, max: allModels.find((m) => m.id === model)?.contextWindow ?? 0 }
+    : null;
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", height: "100%", bgcolor: "background.default", color: "text.primary" }}>
-      <Box sx={{ flex: 1, display: "flex", overflow: "hidden" }}>
-        <Drawer variant="permanent" sx={{ width: sidebarWidth, "& .MuiDrawer-paper": { width: sidebarWidth, position: "relative", bgcolor: "background.paper", color: "text.primary" } }}>
-          <ConversationList conversations={conversations} loading={loading} activeId={conversationId}
-            onSelect={(id) => { clear(); setConversationId(id); setSessionId(null); void loadHistory(id); }}
-            onDelete={remove} onRename={rename}
-            onNewSession={() => { setConversationId(null); setSessionId(null); setStreaming(false); clear(); clearHistory(); }}
-            onDetail={(id) => void openDetail(id, conversations.find((c) => c.id === id)?.title ?? "")} />
-        </Drawer>
+    <Box sx={{ display: "flex", height: "100%", overflow: "hidden", bgcolor: "background.default", color: "text.primary" }}>
+      <AiConversationSidebar
+        sidebarWidth={sidebarWidth}
+        conversations={sidebarRows}
+        loading={loading}
+        activeId={activeSidebarId}
+        selectedIds={selectedIds}
+        onSelect={onSelectConversation}
+        onToggleSelectAll={toggleSelectAll}
+        onDeleteSelected={() => void deleteSelected()}
+        onDelete={(id) => void deleteOne(id)}
+        onCopy={(id) => void copySession(id)}
+        onRename={(id, title) => rename(id, title)}
+        onNewSession={onNewSession}
+        onDetail={(id) => void openDetail(id, sidebarRows.find((c) => c.backendId === id)?.title ?? "")}
+      />
 
-        <Box sx={{ flex: 1, display: "flex", flexDirection: "column", overflow: "clip" }}>
-          <AISQLToolbar providers={providers} model={model} onModelChange={setModel} tokenUsage={effectiveUsage}
-            submitting={submitting} streaming={streaming} sessionTitle={activeTitle} onSubmit={onSubmit} />
-          <AISQLChatBody state={state} backendUrl={backendUrl} historyMessages={historyMessages} />
-          <PromptInput onSubmit={onSubmit} disabled={submitting || streaming} tokenUsage={effectiveUsage} busy={submitting || streaming} />
-        </Box>
+      <Box sx={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
+        <AiChatPanel
+          turns={turns}
+          historyMessages={history}
+          busy={submitting || streaming}
+          onPromptSubmit={onSubmit}
+          resetKey={conversationId ?? "new"}
+          toolbar={<AISQLToolbar backendUrl={backendUrl} tokenUsage={effectiveUsage} submitting={submitting} streaming={streaming} sessionTitle={activeTitle} onSubmit={onSubmit} authToken={authToken} />}
+          modelSlot={modelSlot}
+          welcomeTitle="Que souhaitez-vous savoir ?"
+          welcomeSubtitle="Posez une question sur vos données — SQL généré, exécuté et expliqué."
+        />
       </Box>
 
-      <SessionDetailDialog open={detailOpen} onClose={closeDetail}
-        title={detailTitle} messages={detailMsgs} loading={detailLoading} />
-      <Snackbar open={resumed} autoHideDuration={3000} onClose={() => setResumed(false)} message="Session restored from URL" />
+      <AiSessionDetailDialog open={detailOpen} onClose={closeDetail} title={detailTitle}
+        messages={detailMsgs.map(toAiChatMessage)} loading={detailLoading} />
+      <Snackbar open={false} message="" />
     </Box>
   );
 }
-

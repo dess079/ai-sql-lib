@@ -60,12 +60,12 @@ export function ExamplePromptsPanel({ onSelect, onClose }: ExamplePromptsPanelPr
       {/* ── SECTION 1 : liste par difficulté ── */}
       <Box sx={{ width: "38%", borderRight: "1px solid", borderColor: "divider", overflowY: "auto", py: 1 }}>
         {EXAMPLE_GROUPS.map((g, gi) => (
-          <Box key={g.level} mb={gi < EXAMPLE_GROUPS.length - 1 ? 1.5 : 0}>
+          <Box key={g.level} sx={{ mb: gi < EXAMPLE_GROUPS.length - 1 ? 1.5 : 0 }}>
             <Chip label={g.level} color={g.color} size="small" sx={{ mx: 1, mb: 0.5 }} />
             <Stack spacing={0}>
               {g.items.map((item) => (
                 <Box key={item.label} onClick={() => setSel(item)} sx={rowSx(sel.label === item.label)}>
-                  <Typography variant="body2" noWrap sx={{ fontSize: "0.76rem", flex: 1, mr: 0.5 }}>
+                  <Typography variant="body2" sx={{ fontSize: "0.76rem", flex: 1, mr: 0.5, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                     {item.label}
                   </Typography>
                   <Chip label={chartConfig(theme)[item.outputType].label} size="small"
@@ -84,7 +84,7 @@ export function ExamplePromptsPanel({ onSelect, onClose }: ExamplePromptsPanelPr
           <Chip label={grp.level} color={grp.color} size="small" />
           <Chip label={cfg.label} size="small" sx={{ bgcolor: cfg.bg, color: theme.palette.getContrastText(cfg.bg), fontWeight: 700 }} />
         </Box>
-        <Typography variant="subtitle1" fontWeight={700} lineHeight={1.3}>{sel.label}</Typography>
+        <Typography variant="subtitle1" sx={{ fontWeight: 700, lineHeight: 1.3 }}>{sel.label}</Typography>
         <Paper variant="outlined" sx={{ p: 1.5, bgcolor: "action.hover", overflowY: "auto", maxHeight: 96 }}>
           <Typography variant="body2" sx={{ lineHeight: 1.7, fontStyle: "italic", color: "text.primary" }}>
             « {sel.prompt} »

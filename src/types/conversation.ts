@@ -17,6 +17,8 @@ export interface Message {
   sql?: string;
   /** Model used to produce this assistant message. */
   model?: string;
+  /** Provider that produced this assistant message, when available. */
+  provider?: string;
   /** Persisted query result (columns, rows, chart hint, mermaid) for history rendering. */
   queryResult?: QueryResult;
   createdAt: string;
