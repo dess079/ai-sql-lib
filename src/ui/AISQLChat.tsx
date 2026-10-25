@@ -1,7 +1,7 @@
 /** Drop-in AI-SQL chat experience — UI déléguée à shared-components (AiChatPanel + AiConversationSidebar). */
 import type { JSX } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Box, Snackbar } from "@mui/material";
+import { Box, Chip, Snackbar } from "@mui/material";
 import { AiChatPanel, AiConversationSidebar, AiSessionDetailDialog, type AiChatTurn, type AiChatMessage, type AiConversationRow } from "shared-components";
 import type { TokenUsage } from "../types/models";
 import { useModels } from "../hooks/useModels";
@@ -33,10 +33,17 @@ export interface AISQLChatProps {
    * LlmModelSelector). Receives the current `provider|model` ref and change callback.
    */
   modelSelector?: (props: { value: string | null; onChange: (ref: string | null) => void; disabled?: boolean }) => JSX.Element;
+  /** Titre de bienvenue (écran vide). Défaut générique. */
+  welcomeTitle?: string;
+  /** Sous-titre de bienvenue. Défaut générique. */
+  welcomeSubtitle?: string;
+  /** Prompts de démarrage (ex. rendez-vous) : chips affichées à côté du
+   *  champ quand la conversation est vide, un clic les envoie. */
+  starterPrompts?: string[];
 }
 
 /** Main AI-SQL chat widget — orchestration only, rendering lives in shared-components. */
-export function AISQLChat({ backendUrl, userId = "default", sidebarWidth = 280, authToken, initialModelRef, modelSelector }: AISQLChatProps): JSX.Element {
+export function AISQLChat({ backendUrl, userId = "default", sidebarWidth = 280, authToken, initialModelRef, modelSelector, welcomeTitle = "Que souhaitez-vous savoir ?", welcomeSubtitle = "Posez une question sur vos données — SQL généré, exécuté et expliqué.", starterPrompts }: AISQLChatProps): JSX.Element {
   const { providers } = useModels(backendUrl, authToken);
   const [model, setModel] = useState<string | null>(null);
   useEffect(() => {
@@ -139,6 +146,27 @@ export function AISQLChat({ backendUrl, userId = "default", sidebarWidth = 280, 
     modelSelector ? modelSelector({ value: model, onChange: setModel }) : null
   ), [modelSelector, model]);
 
+  // Chips de démarrage (prompts métier) : uniquement sur écran vide.
+  const starterSlot = useMemo(() => {
+    if (!starterPrompts?.length) return undefined;
+    return (
+      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+        {starterPrompts.map((prompt) => (
+          <Chip
+            key={prompt}
+            label={prompt}
+            variant="outlined"
+            color="primary"
+            clickable
+            disabled={submitting || streaming}
+            onClick={() => void onSubmit(prompt)}
+            sx={{ maxWidth: "100%", height: "auto", py: 0.5, "& .MuiChip-label": { whiteSpace: "normal" } }}
+          />
+        ))}
+      </Box>
+    );
+  }, [starterPrompts, submitting, streaming, onSubmit]);
+
   const allModels = providers.filter((p) => p.enabled).flatMap((p) => p.models);
   const historyTokens = historyMessages.reduce((sum, m) => sum + Math.ceil(m.content.length / 4), 0);
   const activeTokenModel = parseModelReference(state.tokenUsage?.model).model;
@@ -173,8 +201,9 @@ export function AISQLChat({ backendUrl, userId = "default", sidebarWidth = 280, 
           resetKey={conversationId ?? "new"}
           toolbar={<AISQLToolbar backendUrl={backendUrl} tokenUsage={effectiveUsage} submitting={submitting} streaming={streaming} sessionTitle={activeTitle} onSubmit={onSubmit} authToken={authToken} />}
           modelSlot={modelSlot}
-          welcomeTitle="Que souhaitez-vous savoir ?"
-          welcomeSubtitle="Posez une question sur vos données — SQL généré, exécuté et expliqué."
+          asideSlot={turns.length === 0 && history.length === 0 ? starterSlot : undefined}
+          welcomeTitle={welcomeTitle}
+          welcomeSubtitle={welcomeSubtitle}
         />
       </Box>
 

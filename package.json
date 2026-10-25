@@ -4,7 +4,7 @@
   "description": "Drop-in AI-powered SQL chat UI: React 19 components + hooks + SSE event types. Backend-agnostic (pairs with ai-sql-spring-boot-starter).",
   "type": "module",
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=26.0.0"
   },
   "main": "dist/index.esm.js",
   "module": "dist/index.esm.js",
